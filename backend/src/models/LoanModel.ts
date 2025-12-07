@@ -5,75 +5,64 @@ export class LoanModel {
 
   // Fetch all loans with book details
   async findAll() {
-    // TODO: Implement SQL query with JOIN
     // Example: SELECT l.*, b.title as book_title, g.name as genre_name
     //          FROM loans l
     //          JOIN books b ON l.book_id = b.id
     //          LEFT JOIN genres g ON b.genre_id = g.id
     //          ORDER BY l.loan_date DESC
+    const sql = `
+      SELECT L.*, b.title as book_title, g.name as genre_name FROM loans L
+      JOIN books b ON L.book_id = b.id LEFT JOIN genres g ON b.genre_id = g.id
+      ORDER BY L.loan_date DESC`
+    const result = await query(sql)
+    return result.rows
   }
 
-  /**
-   * TODO:  write SQL here
-   * Find a loan by ID
-   */
   async findById(id: number) {
-    // TODO: Implement SQL query
-    // Example: SELECT * FROM loans WHERE id = $1
+    const sql = `select * from loans where id = $1`
+    const result = await query(sql, [id])
+    return result.rows[0]
   }
 
-  /**
-   * TODO:  write SQL here
-   * Create a new loan
-   */
+  // Example: INSERT INTO loans (book_id, user_name, user_email, loan_date, due_date, status)
+  //          VALUES ($1, $2, $3, NOW(), $4, 'active') RETURNING *
   async create(data: CreateLoanDto) {
-    // TODO: Implement SQL INSERT
-    // Example: INSERT INTO loans (book_id, user_name, user_email, loan_date, due_date, status)
-    //          VALUES ($1, $2, $3, NOW(), $4, 'active') RETURNING *
+    //* EXAMPLE in Input - 
+    //* insert into loans (book_id, user_name, user_email, loan_date, due_date, status) 
+    //* values (1, 'George Orwell','george@gmail.com', NOW(), '2025-12-19T11:40','active')
+    const sql = `
+    // insert into loans (book_id, user_name, user_email, loan_date, due_date, status) 
+    // values ($1, $2, $3, NOW(), $4,'active') returning *`
+    const result = await query(sql, [data.book_id, data.user_name, data.user_email, data.due_date])
+    return result.rows[0]
   }
 
-  /**
-   * TODO: Students write SQL here
-   * Update a loan (e.g., mark as returned)
-   */
   async update(id: number, data: UpdateLoanDto) {
-    // TODO: Implement SQL UPDATE
-    // Example: UPDATE loans SET return_date = $1, status = $2 WHERE id = $3 RETURNING *
+    const sql = `update loans set return_date = $1, status = $2 where id = $3 returning *`
+    const result = await query(sql, [id, data.return_date, data.status])
+    return result.rows[0]
   }
 
-  /**
-   * TODO:  write SQL here
-   * Delete a loan by ID
-   */
   async delete(id: number) {
-    // TODO: Implement SQL DELETE
-    // Example: DELETE FROM loans WHERE id = $1
+    const sql = `delete from loans where id = $1`
+    const result = await query(sql, [id])
+    return result.rows[0]
   }
 
-  /**
-   * TODO:  write SQL here
-   * Get all active loans
-   */
   async findActive() {
-    // TODO: Implement SQL query
-    // Example: SELECT * FROM loans WHERE status = 'active'
+    const sql = `select * from loans where status = 'active'`
+    const result = await query(sql)
+    return result.rows
   }
 
-  /**
-   * TODO:  write SQL here
-   * Get all overdue loans
-   */
   async findOverdue() {
-    // TODO: Implement SQL query
-    // Example: SELECT * FROM loans WHERE status = 'active' AND due_date < NOW()
+    const sql = `select * from loans where status = 'active' AND due_date < NOW()`
+    const result = await query(sql)
+    return result.rows
   }
 
-  /**
-   * TODO:  write SQL here
-   * Mark a loan as returned
-   */
   async markAsReturned(id: number) {
-    // TODO: Implement SQL UPDATE
-    // Example: UPDATE loans SET return_date = NOW(), status = 'returned' WHERE id = $1 RETURNING *
+    const sql = `update loans set return_date = now(), status = 'returned' where id = $1 returning *`
+    const result = await query(sql, [id])
   }
 }

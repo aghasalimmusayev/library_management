@@ -1,72 +1,60 @@
+import { BookModel } from "../models/BookModel";
 import { LoanModel } from "../models/LoanModel";
 import { CreateLoanDto, UpdateLoanDto } from "../types/loan";
 
 export class LoanService {
-  private model = new LoanModel();
+  private loanModel = new LoanModel();
+  private bookModel = new BookModel();
+  private validateId(id: number, message: string) {
+    if (!Number.isInteger(id) || id <= 0) throw new Error(message)
+  }
 
-  /**
-   * TODO:  implement business logic here
-   */
   async getAllLoans() {
-    // TODO: Add any business logic
-    return await this.model.findAll();
+    return await this.loanModel.findAll();
   }
 
-  /**
-   * TODO:  implement business logic here
-   */
   async getLoanById(id: number) {
-    // TODO: Add validation
-    return await this.model.findById(id);
+    this.validateId(id, 'Invalid ID')
+    const loan = await this.loanModel.findById(id);
+    if (!loan) throw new Error('Loan not found')
+    return loan
   }
 
-  /**
-   * TODO:  implement business logic here
-   * Consider: checking if book is available (not currently loaned)
-   */
   async createLoan(data: CreateLoanDto) {
-    // TODO: Validate data and check book availability
-    return await this.model.create(data);
+    this.validateId(data.book_id, 'Invalid BookId')
+    if (!data.book_id || !data.user_name || !data.user_email || !data.due_date) throw new Error('Fill all fields')
+    const book = await this.bookModel.findById(data.book_id)
+    if (!book) throw new Error('Book not found')
+    return await this.loanModel.create(data);
   }
 
-  /**
-   * TODO:  implement business logic here
-   */
   async updateLoan(id: number, data: UpdateLoanDto) {
-    // TODO: Add validation
-    return await this.model.update(id, data);
+    this.validateId(id, 'Invalid ID')
+    const book = await this.bookModel.findById(id)
+    if (!book) throw new Error('Book not found')
+    return await this.loanModel.update(id, data);
   }
 
-  /**
-   * TODO:  implement business logic here
-   */
   async deleteLoan(id: number) {
-    // TODO: Add validation
-    return await this.model.delete(id);
+    this.validateId(id, 'Invalid ID')
+    const loan = await this.loanModel.findById(id);
+    if (!loan) throw new Error('Loan not found')
+    return await this.loanModel.delete(id);
   }
 
-  /**
-   * TODO:  implement business logic here
-   */
   async getActiveLoans() {
     // TODO: Add any filtering logic
-    return await this.model.findActive();
+    return await this.loanModel.findActive();
   }
 
-  /**
-   * TODO: Students implement business logic here
-   */
   async getOverdueLoans() {
     // TODO: Add any filtering logic
-    return await this.model.findOverdue();
+    return await this.loanModel.findOverdue();
   }
 
-  /**
-   * TODO:  implement business logic here
-   * Consider: calculating late fees, updating book availability
-   */
+  // Consider: calculating late fees, updating book availability
   async returnLoan(id: number) {
-    // TODO: Add business logic for returning a book
-    return await this.model.markAsReturned(id);
+    this.validateId(id, 'Invalid ID')
+    return await this.loanModel.markAsReturned(id);
   }
 }
