@@ -33,7 +33,10 @@ export class GenreService {
     this.validateId(id, 'Invalid Id')
     const genre = await this.genreModel.findById(id);
     if (!genre) throw new Error('Genre not found')
-    return await this.genreModel.update(id, data);
+    if (data.name === undefined && data.description === undefined) throw new Error('Fill all fields')
+    return await this.genreModel.update(id,
+      { name: data.name ?? genre.name, description: data.description ?? genre.description }
+    );
   }
 
   // Consider: checking if genre has books before deleting
@@ -47,10 +50,9 @@ export class GenreService {
   }
 
   async getGenreBooks(genreId: number) {
-    // TODO: Add validation
     this.validateId(genreId, 'Invalid Id')
     const bookByThisGenre = await this.genreModel.getBooksByGenre(genreId)
-    if (!bookByThisGenre) throw new Error('Genre by this book not found')
+    if (!bookByThisGenre) throw new Error('Book by this genre not found')
     return bookByThisGenre
   }
 }

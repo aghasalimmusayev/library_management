@@ -18,7 +18,7 @@ export interface CreateLoanDto {
 }
 
 export interface UpdateLoanDto {
-  return_date?: Date;
+  due_date?: Date;
   status?: "active" | "returned" | "overdue";
 }
 

@@ -9,6 +9,9 @@ export class GenresController {
       const data = await this.service.getAllGenres();
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch genres" });
     }
   }
@@ -19,6 +22,12 @@ export class GenresController {
       const data = await this.service.getGenreById(id);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch genre" });
     }
   }
@@ -28,6 +37,12 @@ export class GenresController {
       const data = await this.service.createGenre(req.body);
       res.status(201).json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          return res.status(409).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to create genre" });
     }
   }
@@ -38,6 +53,12 @@ export class GenresController {
       const data = await this.service.updateGenre(id, req.body);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to update genre" });
     }
   }
@@ -48,6 +69,12 @@ export class GenresController {
       await this.service.deleteGenre(id);
       res.status(204).send();
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to delete genre" });
     }
   }
@@ -58,6 +85,12 @@ export class GenresController {
       const data = await this.service.getGenreBooks(genreId);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch genre books" });
     }
   }

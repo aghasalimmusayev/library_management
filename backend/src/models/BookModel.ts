@@ -6,7 +6,7 @@ export class BookModel {
   //! select * from books
   async findAll() {
     const sql = `
-      select b.title, b.genre_id, g.name, g.description 
+      select b.id, b.title, b.publication_year, b.genre_id, g.name, g.description 
       from books as b 
       left join genres as g 
       on b.genre_id = g.id`
@@ -27,8 +27,8 @@ export class BookModel {
   }
 
   async update(id: number, data: UpdateBookDto) {
-    const sql = `update books set title = $1, genre_id = $2, where id = $3 returning *`
-    const result = await query(sql, [id, data.title, data.genre_id])
+    const sql = `update books set title = $1, genre_id = $2 where id = $3 returning *`
+    const result = await query(sql, [data.title, data.genre_id, id])
     return result.rows[0]
   }
 
@@ -42,6 +42,12 @@ export class BookModel {
   async getAuthors(bookId: number) {
     const sql = `SELECT a.* FROM authors a JOIN book_authors ba ON a.id = ba.author_id WHERE ba.book_id = $1`
     const result = await query(sql, [bookId])
+    return result.rows
+  }
+
+  async bookHasActiveLoan(id: number) {
+    const sql = `select b.*, l.book_id from books b left join loans l on $1 = l.book_id`
+    const result = await query(sql, [id])
     return result.rows
   }
 

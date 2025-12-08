@@ -19,10 +19,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Routes
-app.use("/api/books", booksRouter);
-app.use("/api/authors", authorsRouter);
-app.use("/api/genres", genresRouter);
-app.use("/api/loans", loansRouter);
+app.use("/api/books", booksRouter); // ✅
+app.use("/api/authors", authorsRouter); // ✅
+app.use("/api/genres", genresRouter); // ✅
+app.use("/api/loans", loansRouter); // ✅
 
 // Health check
 app.get("/health", (req: Request, res: Response) => {

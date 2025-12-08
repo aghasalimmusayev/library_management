@@ -35,7 +35,7 @@ export class BookAuthorModel {
   async delete(bookId: number, authorId: number) {
     const sql = `delete from book_authors where book_id = $1 and author_id = $2 returning *`
     const result = await query(sql, [bookId, authorId])
-    return result.rows[0]
+    return result.rowCount
   }
 
 }

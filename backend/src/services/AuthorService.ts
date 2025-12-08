@@ -34,24 +34,27 @@ export class AuthorService {
   async updateAuthor(id: number, data: UpdateAuthorDto) {
     this.validateId(id, 'Invalid Id')
     const author = await this.authorModel.findById(id)
-    if (!author) throw new Error('This author by this id does not exist')
-    return await this.authorModel.update(id, data);
+    if (!author) throw new Error('This author by this id not found')
+    if (data.name === undefined && data.bio === undefined && data.birth_year === undefined) throw new Error('Fill all inputs')
+    return await this.authorModel.update(id,
+      { name: data.name ?? author.name, bio: data.bio ?? author.bio, birth_year: data.birth_year ?? author.birth_year }
+    );
   }
 
   // Consider: checking if author has books before deleting
   async deleteAuthor(id: number) {
     this.validateId(id, 'Invalid Id')
     const author = await this.authorModel.findById(id)
-    if (!author) throw new Error('This author by this id does not exist')
+    if (!author) throw new Error('This author by this id not found')
     const authorHasBook = await this.bookAuthorModel.findBooksByAuthor(id)
-    if (!authorHasBook) throw new Error('This author has no book')
+    if (authorHasBook) throw new Error('This author has book, you can not delete it')
     return await this.authorModel.delete(id);
   }
 
   async getAuthorBooks(authorId: number) {
     this.validateId(authorId, 'Invalid authorId')
     const booksByAuthor = await this.authorModel.getBooks(authorId);
-    if (!booksByAuthor) throw new Error('This author by this id has no book')
+    if (booksByAuthor.length === 0) throw new Error('This author by this id has no book')
     return booksByAuthor
   }
 }

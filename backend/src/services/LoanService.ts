@@ -25,14 +25,19 @@ export class LoanService {
     if (!data.book_id || !data.user_name || !data.user_email || !data.due_date) throw new Error('Fill all fields')
     const book = await this.bookModel.findById(data.book_id)
     if (!book) throw new Error('Book not found')
+    const existingLoan = await this.loanModel.getUserLoan(data.user_email, data.book_id)
+    if (existingLoan.length > 0) throw new Error('This user has this book')
     return await this.loanModel.create(data);
   }
 
   async updateLoan(id: number, data: UpdateLoanDto) {
     this.validateId(id, 'Invalid ID')
-    const book = await this.bookModel.findById(id)
-    if (!book) throw new Error('Book not found')
-    return await this.loanModel.update(id, data);
+    const loan = await this.loanModel.findById(id);
+    if (!loan) throw new Error('Loan not found')
+    if (data.due_date === undefined && data.status === undefined) throw new Error('Fill at least one field')
+    return await this.loanModel.update(id,
+      { due_date: data.due_date ?? loan.due_date, status: data.status ?? loan.status }
+    );
   }
 
   async deleteLoan(id: number) {
@@ -55,6 +60,8 @@ export class LoanService {
   // Consider: calculating late fees, updating book availability
   async returnLoan(id: number) {
     this.validateId(id, 'Invalid ID')
+    const loan = await this.loanModel.findById(id);
+    if (!loan) throw new Error('Loan not found')
     return await this.loanModel.markAsReturned(id);
   }
 }

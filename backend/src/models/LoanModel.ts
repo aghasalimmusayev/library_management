@@ -24,22 +24,17 @@ export class LoanModel {
     return result.rows[0]
   }
 
-  // Example: INSERT INTO loans (book_id, user_name, user_email, loan_date, due_date, status)
-  //          VALUES ($1, $2, $3, NOW(), $4, 'active') RETURNING *
   async create(data: CreateLoanDto) {
-    //* EXAMPLE in Input - 
-    //* insert into loans (book_id, user_name, user_email, loan_date, due_date, status) 
-    //* values (1, 'George Orwell','george@gmail.com', NOW(), '2025-12-19T11:40','active')
     const sql = `
-    // insert into loans (book_id, user_name, user_email, loan_date, due_date, status) 
-    // values ($1, $2, $3, NOW(), $4,'active') returning *`
+      insert into loans (book_id, user_name, user_email, loan_date, due_date, status) 
+      values ($1, $2, $3, NOW(), $4,'active') returning *`
     const result = await query(sql, [data.book_id, data.user_name, data.user_email, data.due_date])
     return result.rows[0]
   }
 
   async update(id: number, data: UpdateLoanDto) {
-    const sql = `update loans set return_date = $1, status = $2 where id = $3 returning *`
-    const result = await query(sql, [id, data.return_date, data.status])
+    const sql = `update loans set due_date = $1, status = $2 where id = $3 returning *`
+    const result = await query(sql, [data.due_date, data.status, id])
     return result.rows[0]
   }
 
@@ -47,6 +42,12 @@ export class LoanModel {
     const sql = `delete from loans where id = $1`
     const result = await query(sql, [id])
     return result.rows[0]
+  }
+
+  async getUserLoan(user_email: string, book_id: number) {
+    const sql = `select * from loans where user_email = $1 and book_id = $2 and status = 'active'`
+    const result = await query(sql, [user_email, book_id])
+    return result.rows
   }
 
   async findActive() {
@@ -64,5 +65,6 @@ export class LoanModel {
   async markAsReturned(id: number) {
     const sql = `update loans set return_date = now(), status = 'returned' where id = $1 returning *`
     const result = await query(sql, [id])
+    return result.rows[0]
   }
 }

@@ -19,6 +19,12 @@ export class LoansController {
       const data = await this.service.getLoanById(id);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch loan" });
     }
   }
@@ -28,6 +34,15 @@ export class LoansController {
       const data = await this.service.createLoan(req.body);
       res.status(201).json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        if (error.message.includes('This user has this book')) {
+          return res.status(409).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to create loan" });
     }
   }
@@ -38,6 +53,12 @@ export class LoansController {
       const data = await this.service.updateLoan(id, req.body);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to update loan" });
     }
   }
@@ -48,6 +69,12 @@ export class LoansController {
       await this.service.deleteLoan(id);
       res.status(204).send();
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to delete loan" });
     }
   }
@@ -76,6 +103,12 @@ export class LoansController {
       const data = await this.service.returnLoan(id);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to return loan" });
     }
   }

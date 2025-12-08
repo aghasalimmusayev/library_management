@@ -9,6 +9,9 @@ export class AuthorsController {
       const data = await this.service.getAllAuthors();
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch authors" });
     }
   }
@@ -19,8 +22,13 @@ export class AuthorsController {
       const data = await this.service.getAuthorById(id);
       res.json(data);
     } catch (error) {
-      // res.status(500).json({ error: "Failed to fetch author" });
-      res.status(500).json(error);
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to fetch author" });
     }
   }
 
@@ -29,6 +37,12 @@ export class AuthorsController {
       const data = await this.service.createAuthor(req.body);
       res.status(201).json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to create author" });
     }
   }
@@ -39,6 +53,12 @@ export class AuthorsController {
       const data = await this.service.updateAuthor(id, req.body);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          res.status(404).json({ error: error.message })
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to update author" });
     }
   }
@@ -49,6 +69,15 @@ export class AuthorsController {
       await this.service.deleteAuthor(id);
       res.status(204).send();
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        if (error.message.includes('can not')) {
+          return res.status(409).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to delete author" });
     }
   }
@@ -59,6 +88,12 @@ export class AuthorsController {
       const data = await this.service.getAuthorBooks(authorId);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('has no book')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch author books" });
     }
   }

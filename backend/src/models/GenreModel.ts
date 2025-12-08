@@ -29,7 +29,7 @@ export class GenreModel {
 
   async update(id: number, data: UpdateGenreDto) {
     const sql = `update genres set name = $1, description = $2 where id = $3 returning *`
-    const result = await query(sql, [id, data.name, data.description])
+    const result = await query(sql, [data.name, data.description, id])
     return result.rows[0]
   }
 

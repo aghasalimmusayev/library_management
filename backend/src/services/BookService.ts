@@ -2,6 +2,7 @@ import { AuthorModel } from "../models/AuthorModel";
 import { BookAuthorModel } from "../models/BookAuthorModel";
 import { BookModel } from "../models/BookModel";
 import { GenreModel } from "../models/GenreModel";
+import { LoanModel } from "../models/LoanModel";
 import { CreateBookDto, UpdateBookDto } from "../types/book";
 
 export class BookService {
@@ -9,6 +10,7 @@ export class BookService {
   private bookAuthorModel = new BookAuthorModel();
   private genreModel = new GenreModel()
   private authorModel = new AuthorModel()
+  private loanModel = new LoanModel()
   private validateId(id: number, message: string) {
     if (!Number.isInteger(id) || id <= 0) throw new Error(message);
   }
@@ -30,10 +32,10 @@ export class BookService {
 
   // Consider: data validation, checking if genre exists
   async createBook(data: CreateBookDto) {
-    if (!data.title || !data.genre_id || !data.publication_year) throw new Error('Fill all fields')
+    if (data.title === undefined && data.genre_id === undefined) throw new Error("Fill all fields");
     this.validateId(data.genre_id, 'Invalid genreID')
-    const genre = await this.genreModel.findById(data.genre_id)
-    if (!genre) throw new Error('This genre does not exist')
+    const genre = await this.genreModel.findByName(data.title)
+    if (genre) throw new Error('This genre already exists')
     return await this.bookModel.create(data);
   }
 
@@ -43,14 +45,17 @@ export class BookService {
     if (!data.title || !data.genre_id) throw new Error('Fill all fields')
     const book = await this.bookModel.findById(id)
     if (!book) throw new Error('This book does not exist')
-    return await this.bookModel.update(id, data);
+    return await this.bookModel.update(id,
+      { title: data.title ?? book.title, genre_id: data.genre_id ?? book.genre_id }
+    );
   }
 
-  //! Consider: checking if book has active loans before deleting
   async deleteBook(id: number) {
     this.validateId(id, 'Invalid ID')
     const book = await this.bookModel.findById(id)
     if (!book) throw new Error('This book does not exist')
+    const loanedBook = await this.bookModel.bookHasActiveLoan(id)
+    if (loanedBook) throw new Error('You can not delete, this book is loaned')
     return await this.bookModel.delete(id);
   }
 
@@ -79,7 +84,7 @@ export class BookService {
     const author = await this.authorModel.findById(authorId)
     if (!book || !author) throw new Error('Book or Author not found')
     const existing = await this.bookAuthorModel.findByBookAndAuthor(bookId, authorId)
-    if (!existing) throw new Error('This author for this book does not exist')
+    if (!existing) throw new Error('This author for this book does not found')
     return await this.bookAuthorModel.delete(bookId, authorId);
   }
 }

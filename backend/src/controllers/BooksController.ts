@@ -9,6 +9,9 @@ export class BooksController {
       const data = await this.service.getAllBooks();
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch books" });
     }
   }
@@ -19,6 +22,12 @@ export class BooksController {
       const data = await this.service.getBookById(id);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch book" });
     }
   }
@@ -28,6 +37,12 @@ export class BooksController {
       const data = await this.service.createBook(req.body);
       res.status(201).json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          return res.status(409).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to create book" });
     }
   }
@@ -38,6 +53,12 @@ export class BooksController {
       const data = await this.service.updateBook(id, req.body);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('does not exist')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to update book" });
     }
   }
@@ -48,6 +69,15 @@ export class BooksController {
       await this.service.deleteBook(id);
       res.status(204).send();
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('does not exist')) {
+          return res.status(404).json({ error: error.message });
+        }
+        if (error.message.includes('can not')) {
+          return res.status(409).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to delete book" });
     }
   }
@@ -58,17 +88,32 @@ export class BooksController {
       const data = await this.service.getBookAuthors(bookId);
       res.json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('does not exist')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to fetch book authors" });
     }
   }
 
   async addAuthor(req: Request, res: Response) {
     try {
-      const bookId = parseInt(req.params.id);
-      const { authorId } = req.body;
-      const data = await this.service.addAuthorToBook(bookId, authorId);
+      const book_id = parseInt(req.params.id);
+      const { author_id } = req.body;
+      const data = await this.service.addAuthorToBook(book_id, author_id);
       res.status(201).json(data);
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        if (error.message.includes('already exists')) {
+          return res.status(409).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to add author to book" });
     }
   }
@@ -80,6 +125,12 @@ export class BooksController {
       await this.service.removeAuthorFromBook(bookId, authorId);
       res.status(204).send();
     } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          return res.status(404).json({ error: error.message });
+        }
+        return res.status(400).json({ error: error.message });
+      }
       res.status(500).json({ error: "Failed to remove author from book" });
     }
   }
